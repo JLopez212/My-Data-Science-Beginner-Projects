@@ -1,0 +1,164 @@
+---
+title: "Getting Data Project"
+author: "Julian Lopez"
+output:
+  html_document:
+    df_print: paged
+  pdf_document: default
+---
+
+# Getting Data Project
+
+## Objectives for this project
+
+To complete this project you’ll need to do a few things within this file. As you go through the notebook, you will have further instruction on how to complete these objectives.
+
+Be sure [you have followed the steps described in the previous chapter](https://datatrail-jhu.github.io/DataTrail/google-documents.html) and have your Googlesheet with Leanpub data prepared and ready.
+
+1. Go through this notebook, reading along.
+
+2. Fill in empty or incomplete code chunks when prompted to do so.
+
+3. Run each code chunk as you come across it by clicking the tiny green triangles at the right of each chunk. You should see the code chunks print out various output when you do this.
+
+4. At the very top of this file, put your own name in the `author:` place. Currently it says `"DataTrail Team"`. Be sure to put your name in quotes.
+
+5. In the `Conclusions` section, write up responses to each of these questions posed here.
+
+6. When you are satisfied with what you've written and added to this document you'll need to save it. In the menu, go to `File` > `Save`. Now the `nb.html` output resulting file will have your new output saved to it.
+
+7. Open up the resulting `leanpub_project.nb.html` file and click `View in Web Browser`. Does it look good to you? Did all the changes appear here as you expected.
+
+8. Upload your `Rmd` and your `nb.html` to your assignment folder (this is something that will be dependent on what your instructors have told you -- or if you are taking this on your own, just collect these projects in one spot, preferably a Google Drive)!
+
+7. Pat yourself on the back for finishing this project!
+
+## The goal of this analysis
+
+How does the price of a bestselling book relate to how much the author is charging for that book?
+
+## Set up
+
+We are going to use this R package (we'll talk more about package in a later chapter).
+
+```{r}
+library(readr)
+library(magrittr)
+library(googlesheets4)
+library(dplyr)
+library(ggplot2)
+```
+
+## Set up directories
+
+Here we are going to make a data directory if it doesn't already exist.
+
+```{r}
+if (!dir.exists("data")) {
+  dir.create("data")
+}
+```
+
+## Getting the data
+
+Here we are reading in a Google spreadsheet with information about leanpub books and their prices. We will read this data in using the googlesheets4 R package.
+
+```{r}
+leanpub_df <- read_csv("Leanpub_data.csv")
+```
+
+
+So we have a snapshot of what this data look like at the time that we ran this analysis (and for easier sharing purposes), let's use the `readr::write_csv()` function to write this to a file.
+
+Save this file to the `data` directory that we created. And name the file `leanpub_data.csv`. If you don't remember how to use the `readr::write_csv()` function, recall you can look it up using `?readr::write_csv`.
+
+Hint: Look at this chapter for more information on this step: https://datatrail-jhu.github.io/DataTrail/basic-commands-in-r.html#what-is-this-object
+
+```{r, solution = TRUE}
+write_csv(leanpub_df, "data/leanpub_data.csv")
+```
+
+## Explore the data
+
+Use some of the functions you learned to investigate your `leanpub_df`. How many dimensions is it?
+
+```{r, solution = TRUE}
+dim(leanpub_df)
+```
+
+What kind of class object is it?
+
+```{r, solution = TRUE}
+class(leanpub_df)
+```
+
+## Cleaning the data
+
+For the upcoming code, we will need to make sure that we have columns named *exactly* `title`, `readers`, `suggested` and `minimum`.
+
+```{r}
+# If all four of our required columns are found, then this will print out TRUE
+all(c('Title', 'Readers', 'Suggested', 'Minimum') %in% colnames(leanpub_df))
+```
+
+If the above prints out false, you may want to return to your Googlesheets, rename the columns accordingly and start from the top of this notebook again.
+
+This code will clean your data for you.
+
+```{r}
+leanpub_df <- leanpub_df %>%
+  mutate_at(dplyr::vars(Readers, Suggested, Minimum),
+                         as.numeric)
+```
+
+Now that the data are being treated as numeric values properly, we can obtain some summary statistics for your `leanpub_df` dataset. Use a function we have discussed to do this.
+
+```{r, solution = TRUE}
+summary(leanpub_df)
+```
+
+## Plotting the data
+
+To investigate our question, we will want to investigate any potential relationship between the number of readers for a book and the suggested price. We will plot these data in the form of a scatterplot. In upcoming chapters we will go into more detail about how to make plots yourself.  
+
+```{r}
+ggplot(leanpub_df, aes(Readers, Suggested)) +
+  geom_point(color = "blue") +
+  theme_minimal()
+```
+
+## Get the stats
+
+Is there a relationship between `readers` and `suggested` price? We can also use a correlation to ask this question.
+
+```{r}
+cor.test(leanpub_df$Readers, leanpub_df$Suggested)
+```
+If the p value reported is very very small, then there might be a relationship. But also it is likely you'll need to collect more data to get a more confident conclusion using this test.
+
+### Conclusion
+
+Write up your thoughts about this data science project here and answer the following questions:
+
+- What did we find out about our questions?
+1. We found out that there is no statistically significant relationship between the suggested price of a bestselling book and the number of readers.  
+
+- How did we explore our questions?
+1. To explore our questions we gathered relevant data from the leanpub course website onto a google sheet, organized by title, readers, suggested and minimum. That google sheet was then coverted to a CSV file and downloaded to my local computer drive. I then uploaded the file into Posit cloud. Following the upload, I read in the file and converted it into a data frame. Working with the data I cleaned the data using the relevant code and plotted the results on a graph. On the graph, suggested price was on the y axis and the number of readers was on the x axis.    
+
+- What did our explorations show us?
+1. The graph showed the higher the price of the bestselling book the lower number of readers it had. 
+2. The p-value, however, was 0.5349 indicating no significant relationship. 
+
+- What follow up data science questions arise for you regarding this book dataset now that we've explored it some?
+1. We have explored how the suggested price relates to readers but I want to explore how the minimum price relates to readers. 
+
+2. Another question that comes up is that we need to expand the dataset to provide a more comprehensive analysis of how price(either suggested or minimum) relates to readers, I would like to look at the top 20 bestselling books to see what data I can find to further solidify my findings found in this project. 
+
+## Print out session info
+
+Session info is a good thing to print out at the end of your notebooks so that you (and other folks) referencing your notebooks know what software versions and libraries you used to run the notebook.
+
+```{r}
+sessionInfo()
+```
